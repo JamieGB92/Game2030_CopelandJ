@@ -94,10 +94,10 @@ void AGame2030_CopelandJCharacter::TouchStopped(ETouchIndex::Type FingerIndex, F
 		StopJumping();
 }
 
-void AGame2030_CopelandJCharacter::TurnAtRight()
+void AGame2030_CopelandJCharacter::TurnAtRight(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	AddControllerYawInput(180);
+	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 void AGame2030_CopelandJCharacter::TurnAtLeft()
 {
