@@ -21,6 +21,8 @@ class AGame2030_CopelandJCharacter : public ACharacter
 public:
 	AGame2030_CopelandJCharacter();
 
+	virtual void Tick(float DeltaTime) override;
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -30,7 +32,10 @@ public:
 	float BaseLookUpRate;
 
 protected:
+	 
+	FVector2D CameraInput;
 
+	
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
 
@@ -45,7 +50,9 @@ protected:
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void TurnAtRight(float Rate);
-	void TurnAtLeft();
+
+	
+	
 
 	/**
 	 * Called via input to turn look up/down at a given rate. 

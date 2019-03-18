@@ -47,6 +47,15 @@ AGame2030_CopelandJCharacter::AGame2030_CopelandJCharacter()
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
 
+void AGame2030_CopelandJCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	FRotator newRotation = CameraBoom->GetComponentRotation();
+	newRotation.Yaw += CameraInput.X;
+	CameraBoom->SetWorldRotation(newRotation);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -64,9 +73,8 @@ void AGame2030_CopelandJCharacter::SetupPlayerInputComponent(class UInputCompone
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAction("TurnRight",IE_Pressed, this, &AGame2030_CopelandJCharacter::TurnAtRight);
-	PlayerInputComponent->BindAction("TurnLeft", IE_Pressed, this, &AGame2030_CopelandJCharacter::TurnAtLeft);
-
+	PlayerInputComponent->BindAxis("CameraYaw", this, &AGame2030_CopelandJCharacter::TurnAtRight);
+	
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AGame2030_CopelandJCharacter::LookUpAtRate);
 
@@ -97,13 +105,10 @@ void AGame2030_CopelandJCharacter::TouchStopped(ETouchIndex::Type FingerIndex, F
 void AGame2030_CopelandJCharacter::TurnAtRight(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+	AddControllerYawInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+
 }
-void AGame2030_CopelandJCharacter::TurnAtLeft()
-{
-	// calculate delta for this frame from the rate information
-	AddControllerYawInput(-180);
-}
+
 
 void AGame2030_CopelandJCharacter::LookUpAtRate(float Rate)
 {
@@ -120,22 +125,15 @@ void AGame2030_CopelandJCharacter::MoveForward(float Value)
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get forward vector
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		const FVector Direction = FRotationMatrix(GetActorRotation()).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
 	}
 }
 
 void AGame2030_CopelandJCharacter::MoveRight(float Value)
 {
-	if ( (Controller != NULL) && (Value != 0.0f) )
-	{
-		// find out which way is right
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
 	
-		// get right vector 
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		// add movement in that direction
-		AddMovementInput(Direction, Value);
-	}
+	FRotator newRotation = GetActorRotation();
+	newRotation.Yaw += Value;
+	SetActorRotation(newRotation);
 }
