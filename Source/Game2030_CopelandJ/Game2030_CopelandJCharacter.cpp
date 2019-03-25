@@ -8,15 +8,18 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AGame2030_CopelandJCharacter
+
+//class UPawnNoiseEmitterComponent;
 
 AGame2030_CopelandJCharacter::AGame2030_CopelandJCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
+	PrimaryActorTick.bCanEverTick = true;
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
@@ -26,7 +29,7 @@ AGame2030_CopelandJCharacter::AGame2030_CopelandJCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Configure character movement
+	//character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
@@ -42,18 +45,20 @@ AGame2030_CopelandJCharacter::AGame2030_CopelandJCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	
+	
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+
+	NoiseEmitterComponent = CreateAbstractDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitter"));
+
+	
 }
 
 void AGame2030_CopelandJCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FRotator newRotation = CameraBoom->GetComponentRotation();
-	newRotation.Yaw += CameraInput.X;
-	CameraBoom->SetWorldRotation(newRotation);
+	NoiseEmitterComponent->MakeNoise( this,1.f,GetActorLocation());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -121,12 +126,24 @@ void AGame2030_CopelandJCharacter::MoveForward(float Value)
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector Direction = FRotationMatrix(GetActorRotation()).GetUnitAxis(EAxis::X);
+		const FRotator Rotation = this->GetActorRotation();
+		FRotator newRot;
+		FRotator YawRotation(0, Rotation.Yaw, 0);
+		FVector Direction = FRotationMatrix(Rotation).GetUnitAxis(EAxis::X);
+		if (Value != 1.0)
+		{
+			newRot.Yaw =90.f;
+		}
+		else
+		{
+			newRot.Yaw = 270.f;
+		}
+		FQuat newQuat(newRot);
+		
 		AddMovementInput(Direction, Value);
+		GetMesh()->SetRelativeRotation(newQuat);
+		
+		
 	}
 }
 

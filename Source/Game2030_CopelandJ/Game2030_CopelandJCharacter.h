@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/PawnNoiseEmitterComponent.h"
 #include "GameFramework/Character.h"
 #include "Game2030_CopelandJCharacter.generated.h"
+
+class UPawnNoiseEmitterComponent;
 
 UCLASS(config=Game)
 class AGame2030_CopelandJCharacter : public ACharacter
@@ -35,6 +38,10 @@ protected:
 	 
 	FVector2D CameraInput;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
+		UPawnNoiseEmitterComponent* NoiseEmitterComponent;
+
+	
 	
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
