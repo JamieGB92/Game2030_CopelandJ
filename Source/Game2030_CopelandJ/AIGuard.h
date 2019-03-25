@@ -10,6 +10,7 @@
 
 
 class UPawnSensingComponent;
+class UAudioComponent;
 
 UCLASS()
 class GAME2030_COPELANDJ_API AAIGuard : public ACharacter
@@ -33,9 +34,9 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category = "AI")
 		bool bPatrol;
 
-	UPROPERTY(EditInstanceOnly, Category = "AI", meta = (EditCondition = "bPatrol"))
-		TArray<AActor*> PatrolPoints;
-
+	UPROPERTY(BlueprintReadOnly, Category = "Audio")
+		UAudioComponent* GuardSoundComponent;
+	
 	UFUNCTION()
 		void OnPawnSeen(APawn* SeenPawn);
 

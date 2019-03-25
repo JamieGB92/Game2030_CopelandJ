@@ -4,6 +4,7 @@
 #include "Perception/PawnSensingComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 
@@ -11,13 +12,16 @@ AAIGuard::AAIGuard()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	GuardSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AUDIO"));
+	GuardSoundComponent->bAutoActivate = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	//GetCharacterMovement()->RotationRate = FRotator(0.f, 200.f, 0.f);
 	GetCharacterMovement()->MaxWalkSpeed /= 2;
 	//PawnSensingComp = CreateAbstractDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingCmp"));
 	//PawnSensingComp->OnSeePawn.AddDynamic(this, &AAIGuard::OnPawnSeen);
 	GetGuard = this;
+
+	
 	
 
 }

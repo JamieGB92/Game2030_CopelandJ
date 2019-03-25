@@ -42,6 +42,8 @@ public:
 	virtual FRotator GetControlRotation() const override;
 
 	virtual void Possess(APawn* InPawn)			override;
+
+	//virtual void OnB
 #pragma endregion
 
 
@@ -49,7 +51,7 @@ public:
 	UFUNCTION()
 		void OnPawnDetected(const TArray<AActor*> &DetectedPawns);
 
-#pragma region Ai Precetion variables
+#pragma region Ai Perception variables
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
 		float AiSightRadius = 500.f;
 
