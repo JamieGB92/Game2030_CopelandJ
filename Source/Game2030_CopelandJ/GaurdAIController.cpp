@@ -40,11 +40,7 @@ void AGaurdAIController::BeginPlay()
 	Super::BeginPlay();
 
 	AAIGuard* Character = Cast<AAIGuard>(GetPawn());
-	
-	initRotYaw = Character->GetActorRotation().Yaw;
-	
-
-	initLocal = Character->GetActorLocation();
+	initRot.Yaw = Character->GetActorRotation().Yaw;
 	
 }
 
@@ -55,53 +51,75 @@ void AGaurdAIController::Tick(float DeltaSeconds)
 	FString intitRotDebug = FString::SanitizeFloat(lookRot.Yaw);
 	//GEngine->AddOnScreenDebugMessage(8, 10.f, FColor::Blue, initLocal.ToString());
 
-	GEngine->AddOnScreenDebugMessage(3, 0.f, FColor::Red, intitRotDebug);
+	//GEngine->AddOnScreenDebugMessage(3, 0.f, FColor::Red, intitRotDebug);
 	AAIGuard* Character = Cast<AAIGuard>(GetPawn());
-	lookRot = Character->GetActorRotation();
-	
-	
-	if (DistanceToPlayer> AiSightRadius)
+	if (!bTurnPaused)
 	{
-		bIsPlayerDetected = false;
+		PatrolTurnTime += (DeltaSeconds * PatrolTurnSpeed);
+		PatrolYaw = FMath::Sin(PatrolTurnTime);
+		if (FMath::Abs(PatrolYaw) > 0.9f && ((PatrolYaw > 0.0f) == bTurnLeft))
+			bTurnPaused = true;
+
+		const float Spread = 90.0f;
+		PatrolYaw *= Spread;
 	}
-	if (!bIsPlayerDetected)
+	else
+	{
+		const float TurnDelay = 5.0f;
+		TurnDelayTime += DeltaSeconds;
+		if (TurnDelayTime >= TurnDelay)
+		{
+			TurnDelayTime = 0.0f;
+			bTurnPaused = false;
+			bTurnLeft = !bTurnLeft;
+		}
+	}
+	
+	FString tDebug = FString::SanitizeFloat(PatrolYaw);
+	GEngine->AddOnScreenDebugMessage(8, 10.f, FColor::Blue, tDebug);
+
+	if (!DetectedEnemy.IsValid())
 	{
 		GEngine->AddOnScreenDebugMessage(10, 10.f, FColor::Cyan, FString::Printf(TEXT("Player Is Not  Detected")));
 		
-		if (!Character->resetPatrol)
+		Character->GetCharacterMovement()->MaxWalkSpeed = 100.f;
+		if (!resetPatrol)
 		{
 			MoveToActor(Character->NextWaypoint);
-			GEngine->AddOnScreenDebugMessage(5, 10.f, FColor::Emerald, FString::Printf(TEXT("reset patrol false")));
 		}
-		else if(Character->resetPatrol)
+		else
 		{
-			
-			if (Character->GetActorRotation().Yaw != initRot.Yaw&&!doOnce)
-			{
-				// reset to initial posisition and rotation 
-				Character->SetActorRotation(initRot);//this does not exicute
-				doOnce = true;
-			}
-			//look functionality, oscilliation rotation 
-			if (lookRot.Yaw <= initRot.Yaw - 45.f || lookRot.Yaw >= initRot.Yaw + 45.f)
-			{
-				RotRate *= -1;
-			}
-			lookRot.Yaw += RotRate;
+			Character->patrolYaw = PatrolYaw;
+			lookRot.Yaw = initRot.Yaw + PatrolYaw;
 			Character->SetActorRotation(lookRot);
 		}
-		
+	
 	}
-	else if (bIsPlayerDetected)
+	else if (DetectedEnemy.IsValid())
 	{
 		//player chase
-		GEngine->AddOnScreenDebugMessage(1, 10.f, FColor::Emerald, FString::Printf(TEXT("Player Detected")));
+		
+		Character->GetCharacterMovement()->MaxWalkSpeed = 400.f;
 		AGame2030_CopelandJCharacter*player = Cast<AGame2030_CopelandJCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 		MoveToActor(player, 1.f);
-		Character->resetPatrol = false;
+		resetPatrol = false;
 		doOnce = false;
+		FVector TraceStart = Character->GetActorLocation();
+		FVector TraceEnd = player->GetActorLocation();
+		FHitResult OutHit;
+		DistanceToPlayer = GetPawn()->GetDistanceTo(DetectedEnemy.Get());
+		if (DistanceToPlayer > AiSightRadius)
+		{
+			DetectedEnemy = nullptr;
+		}
+		else
+		{
+			GetWorld()->LineTraceSingleByChannel(OutHit, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility);
+			if (OutHit.Time != 1.0f)
+				DetectedEnemy = nullptr;
+		}
 	}
-	Character->bIsPlayerDetected = bIsPlayerDetected;
+	//Character->bIsPlayerDetected = bIsPlayerDetected;
 }
 
 FRotator AGaurdAIController::GetControlRotation() const
@@ -116,14 +134,25 @@ FRotator AGaurdAIController::GetControlRotation() const
 
 void AGaurdAIController::OnPawnDetected(const TArray<AActor*> &DetectedPawns)
 {
+	if (DetectedEnemy.IsValid())
+		return;
+	
+
 	for (size_t i = 0; i < DetectedPawns.Num(); i++)
 	{
-		DistanceToPlayer = GetPawn()->GetDistanceTo(DetectedPawns[i]);
+		DetectedEnemy = DetectedPawns[i];
+		OnPlayerDetectedDelegate.Broadcast();
+		break;
 	}
-	bIsPlayerDetected = true;
+	
 }
 
 void AGaurdAIController::Possess(APawn * InPawn)
 {
 	Super::Possess(InPawn);
+}
+
+void AGaurdAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult & Result)
+{
+	resetPatrol = true;
 }

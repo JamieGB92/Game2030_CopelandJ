@@ -55,8 +55,8 @@ public:
 		class AWayPoint* Waypoint2;
 	// Called to bind functionality to input
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
-		bool bIsPlayerDetected = false;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	//	bool bIsPlayerDetected = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 		bool resetPatrol = false;
@@ -64,5 +64,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 		AAIGuard* GetGuard;
 
-	FRotator initRot;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+		float patrolYaw;
+	
 };

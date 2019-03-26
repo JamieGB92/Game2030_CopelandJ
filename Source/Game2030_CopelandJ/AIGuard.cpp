@@ -4,6 +4,7 @@
 #include "Perception/PawnSensingComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Engine/Engine.h"
 #include "Components/AudioComponent.h"
 
 // Sets default values
@@ -31,6 +32,9 @@ void AAIGuard::BeginPlay()
 {
 	Super::BeginPlay();
 	//PawnSensingComp->OnHearNoise.AddDynamic(this, &AAIGuard::OnNoiseHeard);
+	FString intitSpeed = FString::SanitizeFloat(GetCharacterMovement()->MaxWalkSpeed);
+	FString debug = "AiGuardSpeed " + intitSpeed;
+	GEngine->AddOnScreenDebugMessage(11, 10.f, FColor::Red, debug);
 	
 }
 
