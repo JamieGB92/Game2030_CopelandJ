@@ -57,7 +57,7 @@ public:
 
 #pragma region Ai Perception variables
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
-		float AiSightRadius = 1000.f;
+		float AiSightRadius = 500.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
 		float AiSightAge = 5.0f;

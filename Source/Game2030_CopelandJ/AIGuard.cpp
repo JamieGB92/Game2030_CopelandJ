@@ -34,7 +34,7 @@ void AAIGuard::BeginPlay()
 	//PawnSensingComp->OnHearNoise.AddDynamic(this, &AAIGuard::OnNoiseHeard);
 	FString intitSpeed = FString::SanitizeFloat(GetCharacterMovement()->MaxWalkSpeed);
 	FString debug = "AiGuardSpeed " + intitSpeed;
-	GEngine->AddOnScreenDebugMessage(11, 10.f, FColor::Red, debug);
+	//GEngine->AddOnScreenDebugMessage(11, 10.f, FColor::Red, debug);
 	
 }
 

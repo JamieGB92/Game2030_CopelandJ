@@ -1,12 +1,14 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "Game2030_CopelandJCharacter.h"
+#include "Engine/Engine.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
+
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 
@@ -21,8 +23,8 @@ AGame2030_CopelandJCharacter::AGame2030_CopelandJCharacter()
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	PrimaryActorTick.bCanEverTick = true;
 	// set our turn rates for input
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
+	BaseTurnRate = 180.f;
+	BaseLookUpRate = 500.f;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -30,7 +32,7 @@ AGame2030_CopelandJCharacter::AGame2030_CopelandJCharacter()
 	bUseControllerRotationRoll = false;
 
 	//character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	GetCharacterMovement()->bOrientRotationToMovement = false; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
@@ -45,11 +47,12 @@ AGame2030_CopelandJCharacter::AGame2030_CopelandJCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
 	
-	
+		
+	turnRate = 2;
 
 
-	NoiseEmitterComponent = CreateAbstractDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitter"));
 
 	
 }
@@ -58,7 +61,52 @@ void AGame2030_CopelandJCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	NoiseEmitterComponent->MakeNoise( this,1.f,GetActorLocation());
+	
+
+
+	if (bLevelComplete)
+	{
+		finalTime = pTime;
+	}
+	else
+	{
+		pTime += DeltaTime;
+	}
+	if (bisDead)
+	{
+		finalTime = 0;
+		GetCharacterMovement()->MaxWalkSpeed = 0;
+		turnRate = 0;
+		BaseTurnRate = 0.f;
+		
+	}
+
+	FString levelName = GetWorld()->GetMapName();
+	
+	
+}
+
+void AGame2030_CopelandJCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	FString mapnameActual = "ThirdPersonExampleMap";
+	FString mapName = GetWorld()->GetMapName().Mid(GetWorld()->StreamingLevelsPrefix.Len());
+	//GEngine->AddOnScreenDebugMessage(3, 0.f, FColor::Red, mapName);
+	if (mapName == mapnameActual)
+	{
+
+		GetCharacterMovement()->MaxWalkSpeed = 600;
+		turnRate = 2;
+		BaseTurnRate = 180.f;
+		bisDead = false;
+		bLevelComplete = false;
+		FString poop("scoop");
+		GEngine->AddOnScreenDebugMessage(7, 0.f, FColor::Red, poop);
+	}
+
+	
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -79,6 +127,9 @@ void AGame2030_CopelandJCharacter::SetupPlayerInputComponent(class UInputCompone
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("CameraYaw", this, &AGame2030_CopelandJCharacter::TurnAtRight);
+
+	PlayerInputComponent->BindAction("CameraYawLeft", IE_Pressed, this, &AGame2030_CopelandJCharacter::CameraYawLeft);
+	PlayerInputComponent->BindAction("CameraYawRight", IE_Pressed, this, &AGame2030_CopelandJCharacter::CameraYawRight);
 	
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AGame2030_CopelandJCharacter::LookUpAtRate);
@@ -114,6 +165,19 @@ void AGame2030_CopelandJCharacter::TurnAtRight(float Rate)
 
 }
 
+void AGame2030_CopelandJCharacter::CameraYawLeft()
+{
+	AddControllerYawInput(GetControlRotation().Yaw-BaseTurnRate);
+}
+
+void AGame2030_CopelandJCharacter::CameraYawRight()
+{
+	AddControllerYawInput(GetControlRotation().Yaw + BaseTurnRate);
+	//AddControllerYawInput(GetActorRotation().Yaw + 180.f);
+}
+
+
+
 
 void AGame2030_CopelandJCharacter::LookUpAtRate(float Rate)
 {
@@ -126,22 +190,27 @@ void AGame2030_CopelandJCharacter::MoveForward(float Value)
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is forward
-		const FRotator Rotation = this->GetActorRotation();
+		FRotator Rotation = GetActorRotation();
 		FRotator newRot;
 		FRotator YawRotation(0, Rotation.Yaw, 0);
 		FVector Direction = FRotationMatrix(Rotation).GetUnitAxis(EAxis::X);
-		if (Value != 1.0)
+		
+	
+		
+		
+		if (Value < 0.f)
 		{
-			newRot.Yaw =90.f;
+			
+			bIsWalkingbackwards = true;
+			AddMovementInput(Direction, Value);
 		}
 		else
 		{
-			newRot.Yaw = 270.f;
+			bIsWalkingbackwards = false;
+			AddMovementInput(Direction, Value);
+			
 		}
-		FQuat newQuat(newRot);
 		
-		AddMovementInput(Direction, Value);
-		GetMesh()->SetRelativeRotation(newQuat);
 		
 		
 	}
@@ -151,6 +220,7 @@ void AGame2030_CopelandJCharacter::MoveRight(float Value)
 {
 	
 	FRotator newRotation = GetActorRotation();
-	newRotation.Yaw += Value;
+	newRotation.Yaw += Value*turnRate;
 	SetActorRotation(newRotation);
+	
 }

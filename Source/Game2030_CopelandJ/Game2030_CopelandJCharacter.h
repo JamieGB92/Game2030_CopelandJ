@@ -26,6 +26,21 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Key Pick up")
+		bool bHasKey;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Key Pick up")
+		bool bLevelComplete;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Key Pick up")
+		bool bisDead;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Animation)
+		bool bIsWalkingbackwards=false;
+
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -34,6 +49,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = timer)
+	float finalTime;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = timer)
+		float pTime;
+
+	float turnRate;
 protected:
 	 
 	FVector2D CameraInput;
@@ -57,6 +79,9 @@ protected:
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void TurnAtRight(float Rate);
+
+	void CameraYawLeft();
+	void CameraYawRight();
 
 	
 	
@@ -83,5 +108,8 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	
+
 };
 

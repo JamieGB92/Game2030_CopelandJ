@@ -13,5 +13,21 @@ UCLASS()
 class GAME2030_COPELANDJ_API UStealthGameHighScoreSaves : public USaveGame
 {
 	GENERATED_BODY()
+
+public :
 	
+	UPROPERTY(VisibleAnywhere, Category = Basic)
+		FString PlayerName;
+
+	UPROPERTY(VisibleAnywhere, Category = Basic)
+		FString SaveSlot;
+
+	UPROPERTY(VisibleAnywhere, Category = Basic)
+		uint32 UserIndex;
+	
+	UPROPERTY(VisibleAnywhere, Category = Basic)
+		float score;
+
+	UStealthGameHighScoreSaves();
+
 };

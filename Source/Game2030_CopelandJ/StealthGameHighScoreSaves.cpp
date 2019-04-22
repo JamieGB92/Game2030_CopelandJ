@@ -2,3 +2,7 @@
 
 #include "StealthGameHighScoreSaves.h"
 
+UStealthGameHighScoreSaves::UStealthGameHighScoreSaves()
+{
+
+}

@@ -47,8 +47,8 @@ void AGaurdAIController::BeginPlay()
 void AGaurdAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	FString rotDbug =  FString::SanitizeFloat(lookRot.Yaw);
-	FString intitRotDebug = FString::SanitizeFloat(lookRot.Yaw);
+	//FString rotDbug =  FString::SanitizeFloat(lookRot.Yaw);
+	//FString intitRotDebug = FString::SanitizeFloat(lookRot.Yaw);
 	//GEngine->AddOnScreenDebugMessage(8, 10.f, FColor::Blue, initLocal.ToString());
 
 	//GEngine->AddOnScreenDebugMessage(3, 0.f, FColor::Red, intitRotDebug);
@@ -75,14 +75,14 @@ void AGaurdAIController::Tick(float DeltaSeconds)
 		}
 	}
 	
-	FString tDebug = FString::SanitizeFloat(PatrolYaw);
-	GEngine->AddOnScreenDebugMessage(8, 10.f, FColor::Blue, tDebug);
+	//FString tDebug = FString::SanitizeFloat(PatrolYaw);
+	//GEngine->AddOnScreenDebugMessage(8, 10.f, FColor::Blue, tDebug);
 
 	if (!DetectedEnemy.IsValid())
 	{
 		GEngine->AddOnScreenDebugMessage(10, 10.f, FColor::Cyan, FString::Printf(TEXT("Player Is Not  Detected")));
 		
-		Character->GetCharacterMovement()->MaxWalkSpeed = 100.f;
+		Character->GetCharacterMovement()->MaxWalkSpeed = 200.f;
 		if (!resetPatrol)
 		{
 			MoveToActor(Character->NextWaypoint);
@@ -114,7 +114,7 @@ void AGaurdAIController::Tick(float DeltaSeconds)
 		}
 		else
 		{
-			GetWorld()->LineTraceSingleByChannel(OutHit, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility);
+			GetWorld()->LineTraceSingleByChannel(OutHit, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility);//line of sight to player
 			if (OutHit.Time != 1.0f)
 				DetectedEnemy = nullptr;
 		}
